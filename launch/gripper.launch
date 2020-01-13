@@ -1,0 +1,33 @@
+<launch>
+
+  <arg name="run_test" default="false"/>
+
+  <param name="gripper_description" command="$(find xacro)/xacro.py $(find robotiq_85_description)/urdf/robotiq_85_gripper_non_root.xacro" />
+
+  <!-- Load Robotiq 85 Gripper driver -->
+  <node pkg="robotiq_85_driver" type="robotiq_85_driver_remote_serial" name="robotiq_85_driver" respawn="true" output="screen">
+      <param name="num_grippers" value="1" />
+      <param name="comport" value="/tmp/ttyUR" />
+      <param name="baud" value="115200" />
+  </node>
+
+  <node name="gripper_joint_state_publisher" pkg="joint_state_publisher" type="joint_state_publisher">
+    <remap from="robot_description" to="gripper_description"/>
+    <remap from="joint_states" to="gripper_full_joint_states"/>
+    <rosparam param="source_list">[/gripper/joint_states]</rosparam>
+  </node>
+
+  <node name="gripper_state_publisher" pkg="robot_state_publisher" type="robot_state_publisher" >
+      <remap from="robot_description" to="gripper_description"/>
+      <param name="publish_frequency" type="double" value="100.0" />
+      <param name="tf_prefix" value=""/>
+      <remap from="joint_states" to="gripper_full_joint_states"/>
+  </node>
+
+  <node name="arm_to_gripper_tf" pkg="tf" type="static_transform_publisher" args="0 0 0 0 0 0 1 ee_link gripper_root_link 100"/>
+
+  <node pkg="robotiq_85_driver" type="robotiq_85_test" name="robotiq_85_test" output="screen" if="$(arg run_test)">
+      <param name="num_grippers" value="1"/>
+  </node>
+
+</launch>

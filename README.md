@@ -38,3 +38,11 @@ These steps will result in an Rviz window with an interactive marker to appear. 
 If developing against the speed scaled position controller (as I did) then make sure to note what speed you were developing against. If developing on low speed (such as 10%) for robot control, then when set to full speed (100%) it may pose a safety or control stability risk.
 
 I developed the Relaxed-IK and Lively-IK interfaces with `absolute` positioning. The default is set to `relative` and needs to be changed via hard-coding. My demo would need to be modified to allow for relative control.
+
+## UR Modern Driver Notes
+The following is to capture what needed to be done to use the previous driver (UR Modern Driver) with the UR3e.
+
+1. UR Teach pendant must be set to remote-control mode.
+2. UR Modern Driver takes control of robot by sending scripts over the standard TCP interface. One can send their own scripts using the `URScript` topic.
+  - Unless pull-request was approved recently, one will need to find the most up-to-date fork supporting the e-series robots.
+3. Robotiq control requires the URCap and can only be controlled via sending over the control script.

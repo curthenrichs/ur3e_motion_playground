@@ -3,7 +3,7 @@
   <arg name="rik" default="false"/>
   <arg name="lik" default="true"/>
 
-  <arg name="info_file" default="info_ur3e.yaml"/>
+  <arg name="info_file" default="ur3e_info.yaml"/>
 
   <!-- Custom test code -->
 <!--

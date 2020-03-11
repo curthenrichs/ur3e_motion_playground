@@ -1,55 +1,23 @@
 #!/usr/bin/env python
 
-'''
-Author: Curt Henrichs
-
-Lively-IK based driver node.
-
-Currently a near duplicate of the Relaxed-IK based driver node with only
-difference being the message source from Relaxed-Ik to Lively-IK.
-
-This node provides an interactive marker server to control the end-effector pose
-of the robot.
-
-This node has an open-loop setup process where it moves the robot into starting
-configuration then sets pose of the interactive marker server.
-
-Adjust timing with the JOINT_STEP_DELAY constant. Set to a value that should be
-safe and stable. Note smaller values will make the robot move faster at the expense
-of stability and safety. Larger values will increase the time it takes to reach
-target which may lead to large lag in respone to goal change.
-'''
 
 import tf
 import yaml
 import rospy
 
-from std_msgs.msg import Empty
-from lively_ik.msg import JointAngles, EEPoseGoals
-from robotiq_85_msgs.msg import GripperCmd, GripperStat
+from std_msgs.msg import Bool, Empty
+from lively_ik.msg import EEPoseGoals
 from geometry_msgs.msg import Vector3, Quaternion, Pose
-from trajectory_msgs.msg import JointTrajectory, JointTrajectoryPoint
 
 from interactive_markers.interactive_marker_server import *
 from interactive_markers.menu_handler import *
 from visualization_msgs.msg import *
 
 
-JOINT_STEP_DELAY = 0.5
+class MarkerInterface:
 
-
-class DriverTestNode:
-
-    def __init__(self, info_file_path):
-        self._enabled = False
-
-        # Hardware parameters
-        fin = open(info_file_path,'r')
-        y = yaml.load(fin, Loader=yaml.Loader)
-        self._arm_joint_names = y['joint_ordering']
-        self._arm_starting_config = y['starting_config']
+    def __init__(self):
         self._ee_link = 'ee_link'
-        fin.close()
 
         # Marker
         self._marker_server = InteractiveMarkerServer("robot_controls")
@@ -57,48 +25,15 @@ class DriverTestNode:
         self._marker_server.insert(self._target_marker, self._marker_feedback)
         self._marker_server.applyChanges()
 
-        # ROS Publishers
-        self._grip_cmd_pub = rospy.Publisher('gripper/cmd', GripperCmd, queue_size=10)
         self._ee_goal_pub = rospy.Publisher('relaxed_ik/ee_pose_goals',EEPoseGoals,queue_size=10)
-        self._traj_pub = rospy.Publisher('scaled_pos_traj_controller/command',JointTrajectory,queue_size=5)
+        self._enable_pub = rospy.Publisher('interface/enable',Bool,queue_size=10)
+        self._set_initial_pub = rospy.Publisher('interface/set_initial_pose',Empty,queue_size=10)
 
-        # ROS Subscribers
         self._tf_sub = tf.TransformListener()
-        self._ja_sub = rospy.Subscriber('relaxed_ik/joint_angle_solutions',JointAngles, self._ja_cb)
-        self._gripper_open_sub = rospy.Subscriber('driver_test/gripper_open',Empty,self._gripper_open_cb)
-        self._gripper_close_sub = rospy.Subscriber('driver_test/gripper_close',Empty,self._gripper_close_cb)
 
     def _marker_feedback(self, feedback):
         print "Marker Feedback:", feedback, "\n\n"
         self._target_marker.pose = feedback.pose
-
-    def _gripper_open_cb(self, msg):
-        self._grip_cmd(0.085)
-
-    def _gripper_close_cb(self, msg):
-        self._grip_cmd(0.0)
-
-    def _ja_cb(self, ja):
-        if self._enabled:
-            point = JointTrajectoryPoint()
-            point.positions = ja.angles.data
-            point.time_from_start = rospy.Duration.from_sec(JOINT_STEP_DELAY)
-            self._arm_move(point)
-
-    def _arm_move(self, p):
-        traj = JointTrajectory()
-        traj.header.stamp = rospy.Time.now()
-        traj.header.frame_id = 'world'
-        traj.joint_names = self._arm_joint_names
-        traj.points = [p]
-        self._traj_pub.publish(traj)
-
-    def _grip_cmd(self, ja):
-        cmd = GripperCmd()
-        cmd.position = ja
-        cmd.speed = 0.1
-        cmd.force = 100
-        self._grip_cmd_pub.publish(cmd)
 
     def spin(self):
 
@@ -106,12 +41,8 @@ class DriverTestNode:
         print 'waiting for system ready'
         rospy.sleep(5)
 
-        # setup pose loop
-        print 'commanding robot'
-        point = JointTrajectoryPoint()
-        point.positions = self._arm_starting_config
-        point.time_from_start = rospy.Duration.from_sec(10)
-        self._arm_move(point)
+        # Setting robot to home state
+        self._set_initial_pub.publish(Empty())
 
         # wait for robot to read start state
         print 'letting robot settle at start state'
@@ -144,7 +75,7 @@ class DriverTestNode:
             self._ee_goal_pub.publish(msg)
 
         rospy.sleep(5)
-        self._enabled = True
+        self._enable_pub.publish(Bool(True))
 
         # relaxed ik control loop
         print 'Starting marker publish loop'
@@ -238,14 +169,11 @@ class DriverTestNode:
         control.interaction_mode = InteractiveMarkerControl.MOVE_AXIS
         marker.controls.append(control)
 
-        print marker
         return marker
 
 
 if __name__ == "__main__":
-    rospy.init_node("driver_test_node")
+    rospy.init_node("marker_interface")
 
-    info_file_path = rospy.get_param('~info_file_path')
-
-    node = DriverTestNode(info_file_path)
+    node = MarkerInterface()
     node.spin()

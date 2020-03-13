@@ -90,7 +90,8 @@ info_file_name = 'ur3e_robotiq_info.yaml'
 #   example 2 shows what this would be for a single end-effector robot, specifically using the UR5 robot
 #   ex2: [ ['shoulder_pan_joint', 'shoulder_lift_joint', 'elbow_joint', 'wrist_1_joint', 'wrist_2_joint', 'wrist_3_joint'] ]
 joint_names = [
-	['shoulder_pan_joint', 'shoulder_lift_joint', 'elbow_joint', 'wrist_1_joint', 'wrist_2_joint', 'wrist_3_joint']
+	['shoulder_pan_joint', 'shoulder_lift_joint', 'elbow_joint', 'wrist_1_joint', 'wrist_2_joint', 'wrist_3_joint'],
+	['gripper_finger1_joint']
 ]
 
 ######################################################################################################
@@ -109,7 +110,10 @@ joint_names = [
 #   ex1: [ 'WAIST', 'RIGHT_SHOULDER_PITCH', 'RIGHT_SHOULDER_ROLL', 'RIGHT_SHOULDER_YAW', 'RIGHT_ELBOW', 'RIGHT_WRIST_YAW',
 #               'RIGHT_WRIST_PITCH', 'RIGHT_WRIST_YAW_2','LEFT_SHOULDER_PITCH', 'LEFT_SHOULDER_ROLL', 'LEFT_SHOULDER_YAW',
 #               'LEFT_ELBOW', 'LEFT_WRIST_YAW', 'LEFT_WRIST_PITCH', 'LEFT_WRIST_YAW_2' ]
-joint_ordering =  ['shoulder_pan_joint', 'shoulder_lift_joint', 'elbow_joint', 'wrist_1_joint', 'wrist_2_joint', 'wrist_3_joint']
+joint_ordering =  [
+	'shoulder_pan_joint', 'shoulder_lift_joint', 'elbow_joint', 'wrist_1_joint', 'wrist_2_joint', 'wrist_3_joint',
+	'gripper_finger1_joint'
+]
 
 ######################################################################################################
 
@@ -125,7 +129,10 @@ joint_ordering =  ['shoulder_pan_joint', 'shoulder_lift_joint', 'elbow_joint', '
 #   ex1: ee_fixed_joints = ['RIGHT_HAND', 'LEFT_HAND']
 #   For example 2, using the UR5, this is a single chain robot, so it will only have a single end-effector joint
 #   ex2: ee_fixed_joints = ['ee_fixed_joint']
-ee_fixed_joints = ['ee_fixed_joint']
+ee_fixed_joints = [
+	'ee_fixed_joint',
+	'gripper_finger1_finger_joint'
+]
 ######################################################################################################
 
 
@@ -134,16 +141,17 @@ ee_fixed_joints = ['ee_fixed_joint']
 #   The configuration should be a single list of values for each joint's rotation (in radians) adhering
 #   to the joint order you specified in Step 3b
 #   ex: starting_config = [ 3.12769839, -0.03987385, -2.07729916, -1.03981438, -1.58652782, -1.5710159 ]
-starting_config = [ 1.55, -1.77, 1.4, -1.19, -1.57, 0.0 ]
+starting_config = [1.2181572553351918, -1.8780729105013063, 1.4869403954919918, -1.1610826474259723, -1.5644632190906007, -0.37831758925086234, 0.08499985321177714]
+#[ 1.55, -1.77, 1.4, -1.19, -1.57, 0.0, 0.085 ]
 
 ######################################################################################################
 
 
 ######################################################################################################
-# Step 3f: Please provide the noise for each join in ee_fixed_joints and dc_joints.
+# Step 3f: Please provide the noise for each joint in ee_fixed_joints and dc_joints.
 #   Specifying zeros results in no noise.
-ee_joint_noise = [0.05]
-dc_joint_noise = [ 0.0, 0.0, 0.0, 0.0, 0.0, 0.0 ]
+ee_joint_noise = [0.0, 0.0]
+dc_joint_noise = [ 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0 ]
 
 ######################################################################################################
 
@@ -155,9 +163,9 @@ fixed_frame_noise = 0.0
 ######################################################################################################
 # Step 3g: Sepecify Objective weights for position and orientation for each ee_fixed_joint
 
-ee_position_weight = [ 50 ]
-ee_rotation_weight = [ 49 ]
-dc_joint_weight = [ 0, 0, 0, 0, 0, 0]
+ee_position_weight = [ 50, 0 ]
+ee_rotation_weight = [ 49, 0 ]
+dc_joint_weight = [ 0, 0, 0, 0, 0, 0, 50]
 
 ######################################################################################################
 

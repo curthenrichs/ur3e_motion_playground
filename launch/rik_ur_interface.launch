@@ -1,0 +1,20 @@
+<launch>
+
+  <arg name="info_file" default="ur3e_info.yaml"/>
+
+  <!-- Launch robot interface node -->
+  <node pkg="ur3e_official_driver_relaxed_ik_demo" type="rik_ur_hw_interface.py" name="rik_ur_hw_interface" output="screen">
+    <param name="info_file_path" value="$(find relaxed_ik)/src/RelaxedIK/Config/info_files/$(arg info_file)"/>
+    <param name="arm_joint_step_delay" value="0.5" type="double"/>
+  </node>
+
+  <!-- Marker server -->
+  <node name="interactive_marker_controller" pkg="ur3e_official_driver_relaxed_ik_demo" type="interactive_marker_controller.py" output="screen"/>
+
+  <!-- Launch gripper front-end control UI -->
+  <node pkg="ur3e_official_driver_relaxed_ik_demo" type="rik_gripper_ui.py" name="rik_gripper_ui" output="screen"/>
+
+  <!-- Rviz -->
+  <node type="rviz" name="rviz" pkg="rviz" args="-d $(find ur3e_official_driver_relaxed_ik_demo)/rviz/test.rviz" />
+
+</launch>

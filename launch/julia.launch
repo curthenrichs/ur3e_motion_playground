@@ -1,12 +1,11 @@
 <launch>
 
-  <arg name="rik" default="false"/>
-  <arg name="lik" default="true"/>
-
-  <arg name="info_file" default="ur3e_robotiq_info.yaml"/>
+  <arg name="type" default="lik"/>
 
   <!-- Relaxed-IK interface -->
-  <group if="$(arg rik)">
+  <group if="$(eval arg('type') == 'rik' or arg('type') == 'relaxed-ik')">
+    <arg name="info_file" default="ur3e_info.yaml"/>
+
     <include file="$(find relaxed_ik)/launch/load_info_file.launch">
       <arg name="info_file_name" value="$(arg info_file)"/>
     </include>
@@ -14,7 +13,9 @@
   </group>
 
   <!-- Lively-IK interface -->
-  <group if="$(arg lik)">
+  <group if="$(eval arg('type') == 'lik' or arg('type') == 'lively-ik')">
+    <arg name="info_file" default="ur3e_robotiq_info.yaml"/>
+
     <include file="$(find lively_ik)/launch/load_info_file.launch">
       <arg name="info_file_name" value="$(arg info_file)"/>
     </include>

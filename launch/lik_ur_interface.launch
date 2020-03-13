@@ -2,15 +2,22 @@
 
   <arg name="info_file" default="ur3e_robotiq_info.yaml"/>
 
-  <!-- Launch interfacing nodes -->
-  <node name="lik_ur_interface" pkg="ur3e_official_driver_relaxed_ik_demo" type="lik_ur_interface.py" output="screen">
+  <!-- Launch robot interface node -->
+  <node name="lik_ur_hw_interface" pkg="ur3e_official_driver_relaxed_ik_demo" type="lik_ur_hw_interface.py" output="screen">
     <param name="info_file_path" value="$(find lively_ik)/src/RelaxedIK/Config/info_files/$(arg info_file)"/>
     <param name="gripper_joint" value="gripper_finger1_joint"/>
-    <param name="joint_step_delay" value="0.5" type="double"/>
+    <param name="arm_joint_step_delay" value="0.5" type="double"/>
+    <param name="gripper_joint_update_rate" value="1" type="double"/>
   </node>
 
   <!-- Marker server -->
-  <node name="marker_interface" pkg="ur3e_official_driver_relaxed_ik_demo" type="marker_interface.py" output="screen"/>
+  <node name="interactive_marker_controller" pkg="ur3e_official_driver_relaxed_ik_demo" type="interactive_marker_controller.py" output="screen"/>
+
+  <!-- Launch direct joint control front-end UI (to control gripper) -->
+  <node name="lik_gripper_ui" pkg="ur3e_official_driver_relaxed_ik_demo" type="lik_gripper_ui.py">
+    <param name="info_file_path" value="$(find lively_ik)/src/RelaxedIK/Config/info_files/$(arg info_file)"/>
+    <param name="gripper_joint" value="gripper_finger1_joint"/>
+  </node>
 
   <!-- Rviz -->
   <node type="rviz" name="rviz" pkg="rviz" args="-d $(find ur3e_official_driver_relaxed_ik_demo)/rviz/test.rviz" />

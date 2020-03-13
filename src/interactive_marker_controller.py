@@ -14,10 +14,11 @@ from interactive_markers.menu_handler import *
 from visualization_msgs.msg import *
 
 
-class MarkerInterface:
+class InteractiveMarkerController:
 
     def __init__(self):
         self._ee_link = 'ee_link'
+        self._grip_pose = Pose(position=Vector3(),orientation=Quaternion(0,0,0,1))
 
         # Marker
         self._marker_server = InteractiveMarkerServer("robot_controls")
@@ -26,8 +27,8 @@ class MarkerInterface:
         self._marker_server.applyChanges()
 
         self._ee_goal_pub = rospy.Publisher('relaxed_ik/ee_pose_goals',EEPoseGoals,queue_size=10)
-        self._enable_pub = rospy.Publisher('interface/enable',Bool,queue_size=10)
-        self._set_initial_pub = rospy.Publisher('interface/set_initial_pose',Empty,queue_size=10)
+        self._enable_pub = rospy.Publisher('hw_interface/enable',Bool,queue_size=10)
+        self._set_initial_pub = rospy.Publisher('hw_interface/set_initial_pose',Empty,queue_size=10)
 
         self._tf_sub = tf.TransformListener()
 
@@ -71,7 +72,7 @@ class MarkerInterface:
         # make sure queue is filled with good pose?
         for i in range(0,20):
             msg = EEPoseGoals()
-            msg.ee_poses = [eePose]
+            msg.ee_poses = [eePose, self._grip_pose]
             self._ee_goal_pub.publish(msg)
 
         rospy.sleep(5)
@@ -83,7 +84,7 @@ class MarkerInterface:
         while not rospy.is_shutdown():
 
             msg = EEPoseGoals()
-            msg.ee_poses = [self._target_marker.pose]
+            msg.ee_poses = [self._target_marker.pose, self._grip_pose]
             self._ee_goal_pub.publish(msg)
 
             rate.sleep()
@@ -108,7 +109,7 @@ class MarkerInterface:
         marker.pose.orientation = Quaternion(0,0,0,1)
         marker.scale = 0.25
         marker.name = "pose target"
-        marker.description = "Targe EE pose for Arm"
+        marker.description = "Target EE pose for Arm"
 
         control = InteractiveMarkerControl()
         control.always_visible = True
@@ -173,7 +174,7 @@ class MarkerInterface:
 
 
 if __name__ == "__main__":
-    rospy.init_node("marker_interface")
+    rospy.init_node("interactive_marker_controller")
 
-    node = MarkerInterface()
+    node = InteractiveMarkerController()
     node.spin()

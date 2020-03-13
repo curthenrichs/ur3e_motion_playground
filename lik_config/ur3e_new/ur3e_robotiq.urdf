@@ -379,16 +379,17 @@
     <child link="gripper_finger1_knuckle_link"/>
     <axis xyz="0 0 1"/>
     <origin rpy="3.14159265359 0.0 0.0" xyz="0.05490451627 0.03060114443 0.0"/>
-    <limit effort="1000" lower="0.0" upper="0.804" velocity="2.0"/>
+    <limit effort="100" lower="-0.0001" upper="0.0851" velocity="1000"/>
   </joint>
   <joint name="gripper_finger2_joint" type="revolute">
     <parent link="gripper_base_link"/>
     <child link="gripper_finger2_knuckle_link"/>
     <axis xyz="0 0 1"/>
     <origin rpy="0.0 0.0 0.0" xyz="0.05490451627 -0.03060114443 0.0"/>
-    <limit effort="1000" lower="-3.14" upper="3.14" velocity="100.0"/>
+    <limit effort="100" lower="-0.0001" upper="0.0851" velocity="1000"/>
     <mimic joint="gripper_finger1_joint"/>
   </joint>
+
   <link name="gripper_finger1_knuckle_link">
     <visual>
       <geometry>

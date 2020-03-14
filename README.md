@@ -1,7 +1,7 @@
-# ur3e_official_driver_relaxed_ik_demo
-Demonstration of the official UR ROS robot driver with Relaxed-IK control
+# ur3e_real_time_motion_playground
+Uses new UR driver with RelaxedIK and LivelyIK (with hopefully more algorithms to be added in the future).
 
-This is a test package created to prove out the new Universal Robots ROS driver.
+This is a test package created to prove out the new Universal Robots ROS driver's joint trajectory controller servo behavior. Also provides a general reference on how to use the motion algorithms.
 
 # Package Requirements
 - [fmauch/universal_robot](https://github.com/fmauch/universal_robot)

@@ -16,9 +16,10 @@ from visualization_msgs.msg import *
 
 class InteractiveMarkerController:
 
-    def __init__(self):
+    def __init__(self, separate_grip_chain):
         self._ee_link = 'ee_link'
         self._grip_pose = Pose(position=Vector3(),orientation=Quaternion(0,0,0,1))
+        self._separate_grip_chain = separate_grip_chain
 
         # Marker
         self._marker_server = InteractiveMarkerServer("robot_controls")
@@ -72,7 +73,10 @@ class InteractiveMarkerController:
         # make sure queue is filled with good pose?
         for i in range(0,20):
             msg = EEPoseGoals()
-            msg.ee_poses = [eePose, self._grip_pose]
+            if self._separate_grip_chain:
+                msg.ee_poses = [eePose, self._grip_pose]
+            else:
+                msg.ee_poses = [eePose]
             self._ee_goal_pub.publish(msg)
 
         rospy.sleep(5)
@@ -84,7 +88,10 @@ class InteractiveMarkerController:
         while not rospy.is_shutdown():
 
             msg = EEPoseGoals()
-            msg.ee_poses = [self._target_marker.pose, self._grip_pose]
+            if self._separate_grip_chain:
+                msg.ee_poses = [self._target_marker.pose, self._grip_pose]
+            else:
+                msg.ee_poses = [self._target_marker.pose]
             self._ee_goal_pub.publish(msg)
 
             rate.sleep()
@@ -176,5 +183,7 @@ class InteractiveMarkerController:
 if __name__ == "__main__":
     rospy.init_node("interactive_marker_controller")
 
-    node = InteractiveMarkerController()
+    separate_grip_chain = rospy.get_param('~separate_grip_chain',False)
+
+    node = InteractiveMarkerController(separate_grip_chain)
     node.spin()

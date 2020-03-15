@@ -24,6 +24,12 @@
   <group unless="$(arg lik_grip_control)">
     <arg name="info_file" default="ur3e_info.yaml"/>
 
+    <!-- Launch robot interface node -->
+    <node pkg="ur3e_official_driver_relaxed_ik_demo" type="rik_ur_hw_interface.py" name="rik_ur_hw_interface" output="screen">
+      <param name="info_file_path" value="$(find lively_ik)/src/RelaxedIK/Config/info_files/$(arg info_file)"/>
+      <param name="arm_joint_step_delay" value="0.5" type="double"/>
+    </node>
+
     <!-- Launch gripper front-end control UI -->
     <node pkg="ur3e_real_time_motion_playground" type="rik_gripper_ui.py" name="rik_gripper_ui" output="screen"/>
 

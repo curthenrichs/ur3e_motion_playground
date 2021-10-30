@@ -1,39 +1,12 @@
 <launch>
 
-  <arg name="lik_grip_control" default="true"/>
+  <!-- Launch robot interface node -->
+  <node name="lik_ur_hw_interface" pkg="ur3e_real_time_motion_playground" type="lik_ur_hw_interface.py" output="screen">
+    <param name="arm_joint_step_delay" value="0.5" type="double"/>
+  </node>
 
-  <group if="$(arg lik_grip_control)">
-    <arg name="info_file" default="ur3e_robotiq_info.yaml"/>
-
-    <!-- Launch robot interface node -->
-    <node name="lik_ur_hw_interface" pkg="ur3e_real_time_motion_playground" type="lik_ur_hw_interface.py" output="screen">
-      <param name="info_file_path" value="$(find lively_ik)/src/RelaxedIK/Config/info_files/$(arg info_file)"/>
-      <param name="gripper_joint" value="gripper_finger1_joint"/>
-      <param name="arm_joint_step_delay" value="0.5" type="double"/>
-      <param name="gripper_joint_update_rate" value="1" type="double"/>
-    </node>
-
-    <!-- Launch direct joint control front-end UI (to control gripper) -->
-    <node name="lik_gripper_ui" pkg="ur3e_real_time_motion_playground" type="lik_gripper_ui.py">
-      <param name="info_file_path" value="$(find lively_ik)/src/RelaxedIK/Config/info_files/$(arg info_file)"/>
-      <param name="gripper_joint" value="gripper_finger1_joint"/>
-    </node>
-
-  </group>
-
-  <group unless="$(arg lik_grip_control)">
-    <arg name="info_file" default="ur3e_info.yaml"/>
-
-    <!-- Launch robot interface node -->
-    <node pkg="ur3e_official_driver_relaxed_ik_demo" type="rik_ur_hw_interface.py" name="rik_ur_hw_interface" output="screen">
-      <param name="info_file_path" value="$(find lively_ik)/src/RelaxedIK/Config/info_files/$(arg info_file)"/>
-      <param name="arm_joint_step_delay" value="0.5" type="double"/>
-    </node>
-
-    <!-- Launch gripper front-end control UI -->
-    <node pkg="ur3e_real_time_motion_playground" type="rik_gripper_ui.py" name="rik_gripper_ui" output="screen"/>
-
-  </group>
+  <!-- Launch gripper front-end control UI -->
+  <node pkg="ur3e_real_time_motion_playground" type="rik_gripper_ui.py" name="rik_gripper_ui" output="screen"/>
 
   <!-- Marker server -->
   <node name="interactive_marker_controller" pkg="ur3e_real_time_motion_playground" type="interactive_marker_controller.py" output="screen">

@@ -63,7 +63,7 @@ class RikGripperUI:
 
 
 if __name__ == "__main__":
-    rospy.init_node("rik_gripper_ui")
+    rospy.init_node("gripper_ui")
 
     position_update_rate = rospy.get_param('~position_update_rate',DEFAULT_POSITION_UPDATE_RATE)
 

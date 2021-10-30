@@ -1,7 +1,7 @@
 <launch>
 
   <arg name="robot_ip"/>
-  <arg name="kinematics_config" default="$(find ur3e_official_driver_relaxed_ik_demo)/calibration/ur3e.yaml"/>
+  <arg name="kinematics_config" default="$(find ur3e_real_time_motion_playground)/calibration/ur3e.yaml"/>
 
   <!-- Load UR driver -->
   <include file="$(find ur_robot_driver)/launch/ur3e_bringup.launch">

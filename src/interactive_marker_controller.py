@@ -2,11 +2,9 @@
 
 
 import tf
-import yaml
 import rospy
 
 from std_msgs.msg import Bool, Empty
-from lively_ik.msg import EEPoseGoals
 from geometry_msgs.msg import Vector3, Quaternion, Pose
 
 from interactive_markers.interactive_marker_server import *
@@ -16,10 +14,9 @@ from visualization_msgs.msg import *
 
 class InteractiveMarkerController:
 
-    def __init__(self, separate_grip_chain):
+    def __init__(self):
         self._ee_link = 'ee_link'
         self._grip_pose = Pose(position=Vector3(),orientation=Quaternion(0,0,0,1))
-        self._separate_grip_chain = separate_grip_chain
 
         # Marker
         self._marker_server = InteractiveMarkerServer("robot_controls")
@@ -27,7 +24,7 @@ class InteractiveMarkerController:
         self._marker_server.insert(self._target_marker, self._marker_feedback)
         self._marker_server.applyChanges()
 
-        self._ee_goal_pub = rospy.Publisher('relaxed_ik/ee_pose_goals',EEPoseGoals,queue_size=10)
+        self._ee_goal_pub = rospy.Publisher('lively_tk/ee_pose_goal',Pose,queue_size=10)
         self._enable_pub = rospy.Publisher('hw_interface/enable',Bool,queue_size=10)
         self._set_initial_pub = rospy.Publisher('hw_interface/set_initial_pose',Empty,queue_size=10)
 
@@ -182,8 +179,5 @@ class InteractiveMarkerController:
 
 if __name__ == "__main__":
     rospy.init_node("interactive_marker_controller")
-
-    separate_grip_chain = rospy.get_param('~separate_grip_chain',False)
-
-    node = InteractiveMarkerController(separate_grip_chain)
+    node = InteractiveMarkerController()
     node.spin()

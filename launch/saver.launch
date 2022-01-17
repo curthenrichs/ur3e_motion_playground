@@ -1,0 +1,19 @@
+<launch>
+
+  <arg name="planner" default="ompl"/>
+  <arg name="path_file" default="my_path"/>
+  <arg name="base_frame" default="base_link"/>
+  <arg name="ee_frame" default="ee_link"/>
+
+
+  <include file="$(find planner_fluid_visualization)/launch/ur3e_moveit.launch">
+    <arg name="planner" value="$(arg planner)"/>
+  </include>
+
+  <node name="path_saver" pkg="planner_fluid_visualization" type="path_saver.py"  output="screen">
+    <param name="filepath" value="$(find planner_fluid_visualization)/paths/$(arg path_file).json"/>
+    <param name="base_frame" value="$(arg base_frame)"/>
+    <param name="ee_frame" value="$(arg ee_frame)"/>
+  </node>
+
+</launch>

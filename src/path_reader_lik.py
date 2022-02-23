@@ -1,4 +1,4 @@
-#!/usr/bin/env python
+#!/usr/bin/env python3
 
 '''
 MIT License
@@ -71,7 +71,6 @@ import math
 import rospy
 
 from sensor_msgs.msg import JointState
-from relaxed_ik.msg import EEPoseGoals, JointAngles
 from geometry_msgs.msg import Pose, Vector3, Quaternion
 
 
@@ -102,7 +101,7 @@ class PathReaderRelaxedIk:
 
         self._listener = tf.TransformListener()
 
-        self._ee_goals_pub = rospy.Publisher('/relaxed_ik/ee_pose_goals',EEPoseGoals,queue_size=5)
+        self._ee_goals_pub = rospy.Publisher('path_reader/pose',Pose,queue_size=5)
         self._joint_state_pub = rospy.Publisher('/rik/joint_state',JointState,queue_size=5)
         self._joint_angle_sub = rospy.Subscriber('/relaxed_ik/joint_angle_solutions',JointAngles, self._ja_cb)
 

@@ -1,4 +1,4 @@
-#!/usr/bin/env python
+#!/usr/bin/env python3
 
 '''
 Author: Curt Henrichs
@@ -8,7 +8,7 @@ purposes.
 '''
 
 import rospy
-import Tkinter as tk
+import tkinter as tk
 
 from std_msgs.msg import Empty, Float32
 
@@ -16,12 +16,13 @@ from std_msgs.msg import Empty, Float32
 DEFAULT_POSITION_UPDATE_RATE = 30.0
 
 
-class RikGripperUI:
+class GripperUI:
 
     def __init__(self, position_update_rate):
 
         # Create Tkinter UI
         self._gui_root = tk.Tk()
+        self._gui_root.title("Gripper UI")
         frame = tk.Frame(self._gui_root)
         frame.pack()
 
@@ -59,7 +60,10 @@ class RikGripperUI:
         self._gui_root.mainloop()
 
     def _shutdown_cb(self):
-        self._gui_root.destroy()
+        try:
+            self._gui_root.destroy()
+        except:
+            pass
 
 
 if __name__ == "__main__":
@@ -67,5 +71,5 @@ if __name__ == "__main__":
 
     position_update_rate = rospy.get_param('~position_update_rate',DEFAULT_POSITION_UPDATE_RATE)
 
-    node = RikGripperUI(position_update_rate)
+    node = GripperUI(position_update_rate)
     node.spin()

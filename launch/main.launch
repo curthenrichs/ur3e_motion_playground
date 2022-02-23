@@ -1,0 +1,49 @@
+<launch>
+
+    <!-- Arguements -->
+    <arg name="robot_ip" default="192.168.1.10"/>
+    <arg name="run_driver" default="false"/>
+    <arg name="load_rviz_cfg" default="true"/>
+
+    <!-- Load Robot Hardware -->
+    <include file="$(find ur3e_real_time_motion_playground)/launch/ur3e_w_robotiq85.launch">
+        <arg name="robot_ip" value="$(arg robot_ip)"/>
+        <arg name="run_driver" value="$(arg run_driver)"/>
+    </include>
+
+    <node name="hardware_interface" pkg="ur3e_real_time_motion_playground" type="hardware_interface.py" output="screen" />
+
+    <!-- Load Planning Subsystems -->
+    <node name="pose_mux" pkg="ur3e_real_time_motion_playground" type="pose_mux.py" output="screen"/>
+
+    <include file="$(find ur3e_moveit_config)/launch/move_group.launch">
+        <arg name="allow_trajectory_execution" value="true"/>
+        <arg name="fake_execution" value="true"/>
+        <arg name="info" value="true"/>
+        <arg name="debug" value="false"/>
+    </include>
+
+    <node name="lively_node" pkg="ur3e_real_time_motion_playground" type="lively_node.py" output="screen"/>
+
+    <!-- TOOD path readers-->
+
+    <!-- User Interfaces -->
+    <node name="gripper_ui" pkg="ur3e_real_time_motion_playground" type="gripper_ui.py" output="screen"/>
+    <node name="hardware_interface_ui" pkg="ur3e_real_time_motion_playground" type="hardware_interface_ui.py" output="screen"/>
+    <node name="static_pose_ui" pkg="ur3e_real_time_motion_playground" type="static_pose_ui.py" output="screen"/>
+
+    <!--
+    <node name="path_saver" pkg="ur3e_real_time_motion_playground" type="path_saver.py" output="screen">
+        <param name="paths_dir" value="$(find ur3e_real_time_motion_playground)/paths" type="string"/>
+        <param name="base_frame" value="base_link"/>
+        <param name="ee_frame" value="ee_link"/>
+    </node>
+    -->
+
+    <!-- Rviz & Marker server -->
+    <node if="$(arg load_rviz_cfg)" type="rviz" name="rviz" pkg="rviz" args="-d $(find ur3e_real_time_motion_playground)/rviz/main.rviz" />
+    <node unless="$(arg load_rviz_cfg)" type="rviz" name="rviz" pkg="rviz"/>
+
+    <node name="interactive_marker_controller" pkg="ur3e_real_time_motion_playground" type="interactive_marker_controller.py" output="screen"/>
+
+</launch>

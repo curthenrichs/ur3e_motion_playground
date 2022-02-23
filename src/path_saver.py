@@ -1,4 +1,4 @@
-#!/usr/bin/env python
+#!/usr/bin/env python3
 
 '''
 MIT License
@@ -48,7 +48,6 @@ Parameters:
 import tf
 import json
 import rospy
-
 
 DEFAULT_BASE_FRAME = '/base_link'
 DEFAULT_EE_FRAME = '/ee_link'

@@ -57,7 +57,14 @@ class GripperUI:
 
     def spin(self):
         rospy.on_shutdown(self._shutdown_cb)
+        self._gui_root.after(250, self.check_for_shutdown)
         self._gui_root.mainloop()
+
+    def check_for_shutdown(self):
+        if rospy.is_shutdown():
+            self._gui_root.destroy()
+        else:
+            self._gui_root.after(250, self.check_for_shutdown)
 
     def _shutdown_cb(self):
         try:

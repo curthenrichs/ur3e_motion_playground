@@ -18,7 +18,7 @@ import yaml
 import rospy
 
 from sensor_msgs.msg import JointState
-from std_msgs.msg import Empty, Bool, Float32
+from std_msgs.msg import Empty, Bool, Float32, Time
 from robotiq_85_msgs.msg import GripperCmd, GripperStat
 from trajectory_msgs.msg import JointTrajectory, JointTrajectoryPoint
 
@@ -34,6 +34,7 @@ class HardwareInterfaceNode:
 
     def __init__(self, arm_joints, grip_joint, joint_step_delay,
                  gripper_speed, gripper_effort, start_enabled):
+        self._lockout_time = rospy.get_rostime()
         self._joint_step_delay = joint_step_delay
         self._gripper_speed = gripper_speed
         self._gripper_effort = gripper_effort
@@ -54,7 +55,7 @@ class HardwareInterfaceNode:
         # ROS Subscribers
         self._enabled_sub = rospy.Subscriber('hw_interface/enable', Bool,self._enabled_cb)
         self._ja_sub = rospy.Subscriber('hw_interface/target_joint_state', JointState, self._ja_cb)
-        self._set_initial_pose_sub = rospy.Subscriber('hw_interface/set_initial_pose', Empty, self._set_initial_pose_cb)
+        self._set_initial_pose_sub = rospy.Subscriber('hw_interface/set_initial_pose', Time, self._set_initial_pose_cb)
         self._grip_stat_sub = rospy.Subscriber('gripper/stat', GripperStat, self._grip_stat_cb)
 
         self._open_pub = rospy.Subscriber('hw_interface/gripper_open',Empty,self._grip_open_cb)
@@ -62,13 +63,16 @@ class HardwareInterfaceNode:
         self._position_pub = rospy.Subscriber('hw_interface/gripper_position',Float32,self._grip_pos_cb)
 
     def _enabled_cb(self, msg):
+        print('Hardware interface enabled?', msg.data)
         self._enabled = msg.data
 
     def _ja_cb(self, msg, enableOverride=False):
-        if self._enabled or enableOverride:
-            self._ja_pub.publish(msg) # repost to fake robot data
+        #print("In HW-IF ~ Joint CB -", self._enabled)
+        current_time = rospy.get_rostime()
+        in_lockout = current_time.to_sec() < self._lockout_time.to_sec()
 
-            print(msg)
+        if (self._enabled and not in_lockout) or enableOverride:
+            self._ja_pub.publish(msg) # repost to fake robot data
 
             point = JointTrajectoryPoint()
             angles = list(msg.position)
@@ -94,7 +98,11 @@ class HardwareInterfaceNode:
             cmd.force = self._gripper_effort
             self._grip_cmd_pub.publish(cmd)
 
-    def _set_initial_pose_cb(self, noop):
+    def _set_initial_pose_cb(self, lockout_time):
+        print("HW: Initialize")
+
+        self._lockout_time = rospy.Time(lockout_time.data.secs, lockout_time.data.nsecs)
+
         ja = JointState()
         ja.name = list(self._arm_joint_names)
         ja.position = list(self._starting_config)

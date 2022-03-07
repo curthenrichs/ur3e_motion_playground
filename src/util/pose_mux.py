@@ -20,27 +20,26 @@ class PoseMux:
 
         for i in range(0,len(self._in_subscriber_topics)):
             topic = self._in_subscriber_topics[i]
-            self._in_subscriber_ros.append(rospy.Subscriber(topic, Pose, lambda msg: self._pose_cb(msg, i)))
+            self._in_subscriber_ros.append(rospy.Subscriber(topic, Pose, lambda msg, idx=i, t=topic: self._pose_cb(msg, idx, t)))
            
             pose = Pose()
             pose.orientation.w = 1
             self._in_subscriber_poses.append(pose)
 
-    def _pose_cb(self, msg, idx):
+    def _pose_cb(self, msg, idx, topic):
         self._in_subscriber_poses[idx] = msg
 
-        if idx + 1 == self._slct_option:
+        if idx == self._slct_option:
             self._out_pub.publish(msg)
 
     def _slct_cb(self, msg):
+        print("Pose Mux: ", msg)
         if msg.data < 0 or msg.data > len(self._in_subscriber_topics):
             return # Ignore since its out of bounds
 
         self._slct_option = msg.data
-
-        if self._slct_option > 0:
-            pose = self._in_subscriber_poses[self._slct_option - 1]
-            self._out_pub.publish(pose)
+        pose = self._in_subscriber_poses[self._slct_option]
+        self._out_pub.publish(pose)
 
 
 if __name__ == "__main__":

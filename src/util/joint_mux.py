@@ -25,7 +25,7 @@ class JointMux:
 
         for i in range(0,len(self._in_arm_subscriber_topics)):
             topic = self._in_arm_subscriber_topics[i]
-            self._in_arm_subscriber_ros.append(rospy.Subscriber(topic, JointState, lambda msg: self._joint_arm_cb(msg, i)))
+            self._in_arm_subscriber_ros.append(rospy.Subscriber(topic, JointState, lambda msg, idx=i, t=topic: self._joint_arm_cb(msg, idx, t)))
            
             joints = JointState()
             self._in_arm_subscriber_joints.append(joints)
@@ -36,35 +36,35 @@ class JointMux:
 
         for i in range(0,len(self._in_grip_subscriber_topics)):
             topic = self._in_grip_subscriber_topics[i]
-            self._in_grip_subscriber_ros.append(rospy.Subscriber(topic, JointState, lambda msg: self._joint_grip_cb(msg, i)))
+            self._in_grip_subscriber_ros.append(rospy.Subscriber(topic, JointState, lambda msg, idx=i, t=topic: self._joint_grip_cb(msg, idx, t)))
            
             joints = JointState()
             self._in_grip_subscriber_joints.append(joints)
 
-    def _joint_arm_cb(self, msg, idx):
+    def _joint_arm_cb(self, msg, idx, topic):
         self._in_arm_subscriber_joints[idx] = msg
 
-        if idx +1 == self._slct_option:
+        if idx == self._slct_option:
             self._out_arm_pub.publish(msg)
 
-    def _joint_grip_cb(self, msg, idx):
+    def _joint_grip_cb(self, msg, idx, topic):
         self._in_grip_subscriber_joints[idx] = msg
 
-        if idx +1 == self._slct_option:
+        if idx == self._slct_option:
             self._out_grip_pub.publish(msg)
 
     def _slct_cb(self, msg):
+        print("Joint Mux - ", msg)
         if msg.data < 0 or msg.data > len(self._in_arm_subscriber_topics):
             return # Ignore since its out of bounds
 
         self._slct_option = msg.data
 
-        if self._slct_option > 0:
-            arm_msg = self._in_arm_subscriber_joints[self._slct_option - 1]
-            self._out_arm_pub.publish(arm_msg)
+        arm_msg = self._in_arm_subscriber_joints[self._slct_option]
+        self._out_arm_pub.publish(arm_msg)
 
-            grip_msg = self._in_grip_subscriber_joints[self._slct_option - 1]
-            self._out_grip_pub.publish(grip_msg)
+        grip_msg = self._in_grip_subscriber_joints[self._slct_option]
+        self._out_grip_pub.publish(grip_msg)
  
 
 if __name__ == "__main__":

@@ -1,8 +1,8 @@
 <?xml version="1.0"?>
 <package format="2">
-  <name>ur3e_real_time_motion_playground</name>
+  <name>ur3e_motion_playground</name>
   <version>0.0.0</version>
-  <description>The ur3e_real_time_motion_playground package</description>
+  <description>The ur3e_motion_playground package</description>
 
   <!-- One maintainer tag required, multiple allowed, one person per tag -->
   <!-- Example:  -->

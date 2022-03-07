@@ -3,7 +3,7 @@
     <!-- Arguements -->
     <arg name="robot_ip"/>
     <arg name="run_driver" default="false"/>
-    <arg name="kinematics_config" default="$(find ur3e_real_time_motion_playground)/description/calibration/ur3e.yaml"/>
+    <arg name="kinematics_config" default="$(find ur3e_motion_playground)/description/calibration/ur3e.yaml"/>
 
     <!-- Robot Description -->
     <param name="gripper_description" command="xacro  '$(find robotiq_85_description)/urdf/robotiq_85_gripper_non_root.xacro'" />
@@ -44,7 +44,7 @@
             <arg name="tool_tcp_port" value="54321"/>
         </include>
         
-        <node pkg="robotiq_85_driver" type="robotiq_85_driver_remote_serial" name="robotiq_85_driver" respawn="true" output="screen">
+        <node pkg="robotiq_85_driver" type="robotiq_85_driver_remote_serial" name="robotiq_85_driver" respawn="true" output="log">
             <param name="num_grippers" value="1" />
             <param name="comport" value="/tmp/ttyUR" />
             <param name="baud" value="115200" />
@@ -52,10 +52,11 @@
     </group>
 
     <!-- Given the published joint states, publish tf for the robot links -->
-    <node name="joint_mux" pkg="ur3e_real_time_motion_playground" type="joint_mux.py" output="screen"/>
+    <node name="joint_mux" pkg="ur3e_motion_playground" type="joint_mux.py" output="log"/>
 
     <node name="robot_joint_state_publisher" pkg="joint_state_publisher" type="joint_state_publisher">
-        <rosparam param="/source_list">[joint_mux/output_arm]</rosparam>
+        <rosparam param="source_list">[joint_mux/output_arm]</rosparam>
+        <remap from="joint_states" to="arm_full_joint_state"/>
     </node>
 
     <node name="gripper_joint_state_publisher" pkg="joint_state_publisher" type="joint_state_publisher">
@@ -64,20 +65,19 @@
         <rosparam param="source_list">[joint_mux/output_gripper]</rosparam>
     </node>
 
-    <node name="robot_state_publisher" pkg="robot_state_publisher" type="robot_state_publisher" respawn="true" output="screen">
-        <param name="publish_frequency" type="double" value="100.0" />
-        <param name="tf_prefix" value=""/>
+    <node name="robot_state_publisher" pkg="robot_state_publisher" type="robot_state_publisher" respawn="true">
+        <remap from="joint_states" to="arm_full_joint_state"/>
+        <param name="use_tf_static" value="false"/>
     </node>
 
     <node name="gripper_state_publisher" pkg="robot_state_publisher" type="robot_state_publisher" >
         <remap from="robot_description" to="gripper_description"/>
-        <param name="publish_frequency" type="double" value="100.0" />
-        <param name="tf_prefix" value=""/>
         <remap from="joint_states" to="gripper_full_joint_state"/>
+        <param name="use_tf_static" value="false"/>
     </node>
 
-    <node name="arm_to_gripper_tf" pkg="tf" type="static_transform_publisher" args="0 0 0 0 0 0 1 ee_link gripper_root_link 100"/>
-
-    <node name="world_to_arm_tf" pkg="tf" type="static_transform_publisher" args="0 0 0 0 0 0 1 world base 100"/>
+    <node name="arm_to_gripper_tf" pkg="tf" type="static_transform_publisher" args="0 0 0 0 0 0 1 flange gripper_root_link 100"/>
+    <node name="world_to_base_tf" pkg="tf" type="static_transform_publisher" args="0 0 0 0 0 0 1 world base_link 100"/>
+    <node name="flange_to_ee_link_tf" pkg="tf" type="static_transform_publisher" args="0 0 0 0 0 0 1 flange ee_link 100"/>
 
 </launch>

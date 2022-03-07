@@ -7,18 +7,20 @@ import rospy
 import tkinter as tk
 from tkinter import ttk 
 
-from std_msgs.msg import Empty, Bool, Int8
+from std_msgs.msg import Bool, Int8, Time
 
 
 DEFAULT_ENABLE_STATE = False
+DEFAULT_LOCKOUT_PERIOD = 10
 DEFAULT_POSE_MUX_INDEX = 0
 DEFAULT_JOINT_MUX_INDEX = 0
 
 
 class HardwareInterfaceUI:
 
-    def __init__(self, enable_state, pose_mux_index, joint_mux_index):
+    def __init__(self, enable_state, lockout_period, pose_mux_index, joint_mux_index):
         self._enable_state = enable_state
+        self._lockout_period = lockout_period
 
         # Create Tkinter UI
         self._gui_root = tk.Tk()
@@ -46,14 +48,12 @@ class HardwareInterfaceUI:
         self._pose_slctVar.set(pose_mux_index)
         self._pose_slctVar.trace("w", self._select_pose)
 
-        self._pose_none_slct_btn = tk.Radiobutton(pose_mux_frame, text="No Pose", variable=self._pose_slctVar, value=0)
-        self._pose_none_slct_btn.pack(side=tk.RIGHT)
-        self._pose_rviz_slct_btn = tk.Radiobutton(pose_mux_frame, text="Interactive RViz", variable=self._pose_slctVar, value=1)
-        self._pose_rviz_slct_btn.pack(side=tk.RIGHT)
-        self._pose_path_slct_btn = tk.Radiobutton(pose_mux_frame, text="Path Reader", variable=self._pose_slctVar, value=2)
-        self._pose_path_slct_btn.pack(side=tk.RIGHT)
-        self._pose_static_slct_btn = tk.Radiobutton(pose_mux_frame, text="Static Pose", variable=self._pose_slctVar, value=3)
-        self._pose_static_slct_btn.pack(side=tk.RIGHT)
+        self._pose_rviz_slct_btn = tk.Radiobutton(pose_mux_frame, text="Interactive RViz", variable=self._pose_slctVar, value=0)
+        self._pose_rviz_slct_btn.pack(side=tk.LEFT)
+        self._pose_path_slct_btn = tk.Radiobutton(pose_mux_frame, text="Path Reader", variable=self._pose_slctVar, value=1)
+        self._pose_path_slct_btn.pack(side=tk.LEFT)
+        self._pose_static_slct_btn = tk.Radiobutton(pose_mux_frame, text="Static Pose", variable=self._pose_slctVar, value=2)
+        self._pose_static_slct_btn.pack(side=tk.LEFT)
 
 
         joint_mux_frame = tk.Frame(frame)
@@ -66,18 +66,16 @@ class HardwareInterfaceUI:
         self._joint_slctVar.set(joint_mux_index)
         self._joint_slctVar.trace("w", self._select_js)
 
-        self._joint_none_slct_btn = tk.Radiobutton(joint_mux_frame, text="No Joints", variable=self._joint_slctVar, value=0)
-        self._joint_none_slct_btn.pack(side=tk.RIGHT)
-        self._joint_ltk_slct_btn = tk.Radiobutton(joint_mux_frame, text="Lively-TK", variable=self._joint_slctVar, value=1)
-        self._joint_ltk_slct_btn.pack(side=tk.RIGHT)
-        self._joint_moveit_slct_btn = tk.Radiobutton(joint_mux_frame, text="MoveIT", variable=self._joint_slctVar, value=2)
-        self._joint_moveit_slct_btn.pack(side=tk.RIGHT)
-        self._joint_driver_slct_btn = tk.Radiobutton(joint_mux_frame, text="Driver", variable=self._joint_slctVar, value=3)
-        self._joint_driver_slct_btn.pack(side=tk.RIGHT)
+        self._joint_ltk_slct_btn = tk.Radiobutton(joint_mux_frame, text="Hardware Interface (Lively)", variable=self._joint_slctVar, value=0)
+        self._joint_ltk_slct_btn.pack(side=tk.LEFT)
+        self._joint_moveit_slct_btn = tk.Radiobutton(joint_mux_frame, text="MoveIT", variable=self._joint_slctVar, value=1)
+        self._joint_moveit_slct_btn.pack(side=tk.LEFT)
+        self._joint_driver_slct_btn = tk.Radiobutton(joint_mux_frame, text="Driver", variable=self._joint_slctVar, value=2)
+        self._joint_driver_slct_btn.pack(side=tk.LEFT)
 
         # ROS interface
         self._enable_pub = rospy.Publisher('hw_interface/enable',Bool,queue_size=5)
-        self._set_initial_pub = rospy.Publisher('hw_interface/set_initial_pose',Empty,queue_size=5)
+        self._set_initial_pub = rospy.Publisher('hw_interface/set_initial_pose',Time,queue_size=5)
         self._pose_mux_pub = rospy.Publisher('pose_mux/select',Int8, queue_size=5)
         self._joint_mux_pub = rospy.Publisher('joint_mux/select',Int8, queue_size=5)
 
@@ -93,7 +91,9 @@ class HardwareInterfaceUI:
             self._enable_button['text'] = 'Enable'
 
     def _initialize(self):
-        self._set_initial_pub.publish(Empty())
+        time = rospy.get_rostime()
+        time.secs += self._lockout_period
+        self._set_initial_pub.publish(time)
 
     def _select_pose(self, *args):
         self._pose_mux_pub.publish(Int8(int(self._pose_slctVar.get())))
@@ -130,8 +130,9 @@ if __name__ == "__main__":
     rospy.init_node("hardware_interface_ui")
 
     enable_state = rospy.get_param("~enable_state", DEFAULT_ENABLE_STATE)
+    lockout_period = rospy.get_param("~lockout_period", DEFAULT_LOCKOUT_PERIOD)
     pose_mux_index = rospy.get_param("~pose_mux_index", DEFAULT_POSE_MUX_INDEX)
     joint_mux_index = rospy.get_param("~joint_mux_index", DEFAULT_JOINT_MUX_INDEX)
 
-    node = HardwareInterfaceUI(enable_state, pose_mux_index, joint_mux_index)
+    node = HardwareInterfaceUI(enable_state, lockout_period, pose_mux_index, joint_mux_index)
     node.spin()

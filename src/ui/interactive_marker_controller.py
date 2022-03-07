@@ -13,7 +13,7 @@ from visualization_msgs.msg import *
 
 
 DEFAULT_BASE_LINK = 'world'
-DEFAULT_EE_LINK = 'ee_link'
+DEFAULT_EE_LINK = 'flange'
 DEFAULT_SPIN_RATE = 10
 
 

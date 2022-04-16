@@ -14,7 +14,7 @@
         <arg name="run_driver" value="$(arg run_driver)"/>
     </include>
 
-    <node name="hardware_interface" pkg="ur3e_motion_playground" type="hardware_interface.py" output="screen" />
+    <node name="hardware_interface" pkg="ur3e_motion_playground" type="hardware_interface.py" output="log" />
 
     <!-- Load Planning Subsystems -->
     <node name="pose_mux" pkg="ur3e_motion_playground" type="pose_mux.py" output="log"/>
@@ -37,7 +37,7 @@
         <node name="gripper_ui" pkg="ur3e_motion_playground" type="gripper_ui.py" output="log"/>
         <node name="hardware_interface_ui" pkg="ur3e_motion_playground" type="hardware_interface_ui.py" output="log"/>
         <node name="static_pose_ui" pkg="ur3e_motion_playground" type="static_pose_ui.py" output="log"/>
-        <node name="lively_ui" pkg="ur3e_motion_playground" type="lively_ui.py" output="screen"/>
+        <node name="lively_ui" pkg="ur3e_motion_playground" type="lively_ui.py" output="log"/>
     </group>
 
     <!--

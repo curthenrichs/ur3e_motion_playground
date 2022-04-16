@@ -54,6 +54,25 @@ class LivelyNode:
             max_iterations=150 # Number of iterations per try (default 150)
         )
 
+        print('\n\n\n')
+        print(urdf)
+        print('\n\n\n')
+        print(dir(self._solver),'\n')
+        print('---')
+        print(self._solver.current_goals)
+        print('---')
+        print(dir(self._solver.current_state))
+        print(self._solver.current_state.center_of_mass)
+        print(self._solver.current_state.frames)
+        print(self._solver.current_state.joints)
+        print(self._solver.current_state.origin)
+        print(self._solver.current_state.proximity)
+        print('---')
+        print(self._solver.joints)
+        print(self._solver.links)
+        print(self._solver.objectives)
+        print('\n\n\n')
+
         # ROS Interface
         self._ja_pub = rospy.Publisher('hw_interface/target_joint_state', JointState, queue_size=10)
         self._pose_sub = rospy.Subscriber('pose_mux/output', Pose, self._pose_cb)
@@ -67,6 +86,7 @@ class LivelyNode:
                 self._js_config[name] = pos
 
     def _pose_cb(self, msg):
+        #print("New Target", msg)
         self._target = msg
 
     def _reset_init_cb(self, _):
@@ -78,6 +98,10 @@ class LivelyNode:
     def solver_step(self, pose, current_time=0):
         jNames = list(self._joint_names)
 
+        #print(pose)
+        #print(self._initial_weights.values())
+        #print(current_time)
+
         state = self._solver.solve(
             goals=[
                 Translation(x=pose.position.x, y=pose.position.y, z=pose.position.z),
@@ -86,8 +110,11 @@ class LivelyNode:
                 None
             ],
             weights=list(self._initial_weights.values()),
-            time=current_time
+            time=0,
+            shapes=[]
         )
+
+        #print(state.joints)
 
         jPos = [state.joints[n] for n in jNames]
         
@@ -96,9 +123,12 @@ class LivelyNode:
     def spin(self):
         rate = rospy.Rate(self._spin_rate)
 
-        start_time = time.time()
+        start_time = time.time() 
+
+        self._reset_init_cb(None)
 
         while not rospy.is_shutdown():
+            #print('Solver loop')
 
             current_time = time.time() - start_time
 
@@ -108,6 +138,7 @@ class LivelyNode:
             msg.position = positions
             msg.name = names
             self._ja_pub.publish(msg)
+            #print(msg)
 
             rate.sleep()
 
